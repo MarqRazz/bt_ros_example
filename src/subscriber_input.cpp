@@ -11,19 +11,19 @@ SubscriberInput::SubscriberInput(const std::string& name, const NodeConfiguratio
              StatefulActionNode(name, config), node_(node), input_topic_(input_topic)
 {
   RCLCPP_INFO(LOGGER, "SubscriberInput Stateful constructor");
+  callback_group_ = node_->create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
+  auto options = rclcpp::SubscriptionOptions();
+  options.callback_group = callback_group_;
+
+  empty_msg_sub_ = node_->create_subscription<std_msgs::msg::Empty>(
+    input_topic_, rclcpp::SensorDataQoS().reliable(),
+    std::bind(&SubscriberInput::subscriberCb, this, std::placeholders::_1), options);
 }
 
 NodeStatus SubscriberInput::onStart()
 {
-  callback_group_ = node_->create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
-  auto options = rclcpp::SubscriptionOptions();
-  options.callback_group = callback_group_;
-  RCLCPP_INFO(LOGGER, "Subscribing to Input Topic: %s", input_topic_.c_str());
+  RCLCPP_INFO(LOGGER, "Start waiting for message", input_topic_.c_str());
   msg_received_ = false;
-  empty_msg_sub_ = node_->create_subscription<std_msgs::msg::Empty>(
-    input_topic_, rclcpp::SensorDataQoS().reliable(), 
-    std::bind(&SubscriberInput::subscriberCb, this, std::placeholders::_1), options);
-
   return NodeStatus::RUNNING;
 }
 
@@ -32,7 +32,6 @@ NodeStatus SubscriberInput::onRunning()
   if(msg_received_)
   {
     RCLCPP_INFO(LOGGER,"Received msg from: %s", input_topic_.c_str());
-    empty_msg_sub_.reset(); // unsubscribe
     return NodeStatus::SUCCESS;
   }
   
@@ -42,7 +41,6 @@ NodeStatus SubscriberInput::onRunning()
 void SubscriberInput::onHalted()
 {
   RCLCPP_ERROR(LOGGER, "onHalted() has been called");
-  empty_msg_sub_.reset();
 }
 
 void SubscriberInput::subscriberCb(const std_msgs::msg::Empty::SharedPtr msg)

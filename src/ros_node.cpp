@@ -51,7 +51,7 @@ void AwesomeROSNode::initialize()
   factory_.registerBuilder<bt_ros_example_coro::SubscriberInput>( "SubscriberInputCoro", user_input_builder_coro);
 }
 
-void AwesomeROSNode::run_tree()
+void AwesomeROSNode::run_tree(rclcpp::Executor* executor)
 {
   RCLCPP_WARN(LOGGER, "creating Tree");
   auto tree = factory_.createTreeFromText(xml_text);
@@ -61,12 +61,12 @@ void AwesomeROSNode::run_tree()
   PublisherZMQ publisher_zmq(tree);
 
   //---------------------------------------
-  // keep executin tick until it returns etiher SUCCESS or FAILURE
+  // keep executing tick until it returns either SUCCESS or FAILURE
   NodeStatus status = NodeStatus::RUNNING;
   while( status == NodeStatus::RUNNING && rclcpp::ok())
   {
-    status = tree.tickRoot(); 
-    std::this_thread::sleep_for( std::chrono::milliseconds(10) );
+    status = tree.tickRoot();
+    executor->spin_once( std::chrono::milliseconds(1) );
   }
 }
 }  // namespace bt_ros_example

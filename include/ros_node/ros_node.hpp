@@ -27,7 +27,8 @@ public:
   rclcpp::node_interfaces::NodeBaseInterface::SharedPtr getNodeBaseInterface();
 
   void initialize();
-  void run_tree();
+  void run_tree(rclcpp::Executor *executor);
+
 
 private:
   rclcpp::Node::SharedPtr node_;

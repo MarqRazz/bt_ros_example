@@ -8,11 +8,10 @@ int main(int argc, char* argv[])
 
   auto node = std::make_shared<bt_ros_example::AwesomeROSNode>(options);
   node->initialize();
-  node->run_tree();
 
   rclcpp::executors::MultiThreadedExecutor exec;
-  exec.add_node(node->getNodeBaseInterface());  
-  exec.spin();
+  exec.add_node(node->getNodeBaseInterface());
+  node->run_tree(&exec);
   exec.remove_node(node->getNodeBaseInterface());
 
   rclcpp::shutdown();
