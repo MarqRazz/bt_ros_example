@@ -52,7 +52,6 @@ NodeStatus SubscriberInput::tick()
 void SubscriberInput::halt()
 {
   RCLCPP_ERROR(LOGGER, "halt() has been called");
-  empty_msg_sub_.reset();
   // Do not forget to call this at the end.
   CoroActionNode::halt();
 }
